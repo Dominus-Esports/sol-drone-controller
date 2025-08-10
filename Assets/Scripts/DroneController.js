@@ -42,10 +42,7 @@
   const light = new BABYLON.HemisphericLight('Light', new BABYLON.Vector3(0, 1, 0), scene);
   light.intensity = 0.9;
 
-  const ground = BABYLON.MeshBuilder.CreateGround('Ground', { width: 200, height: 200 }, scene);
-  const groundMat = new BABYLON.StandardMaterial('GroundMat', scene);
-  groundMat.diffuseColor = new BABYLON.Color3(0.08, 0.1, 0.16);
-  ground.material = groundMat;
+  // Ground is provided by SceneBuilder (chessboard). Remove legacy flat ground.
 
   const player = BABYLON.MeshBuilder.CreateBox('Drone', { size: 0.4 }, scene);
   player.position = state.position.clone();
