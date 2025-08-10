@@ -8,12 +8,14 @@
     "lint": "eslint \"Assets/**/*.js\" \"server/**/*.js\"",
     "test": "jest",
     "test:e2e": "node ./__tests__/smoke.e2e.test.js && node ./__tests__/perf.e2e.test.js",
+    "test:pw": "playwright test",
     "vercel-build": "echo \"static build\""
   },
   "dependencies": {
     "express": "^4.19.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "eslint": "^9.33.0",
     "jest": "^29.7.0",
     "prettier": "^3.6.2",

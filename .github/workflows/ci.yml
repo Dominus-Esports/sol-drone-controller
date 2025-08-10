@@ -17,5 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run lint --silent
       - run: npm test --silent
+      - run: npx playwright install --with-deps
+      - run: npm run test:pw --silent
 
 
