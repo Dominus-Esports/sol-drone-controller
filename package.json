@@ -7,7 +7,7 @@
     "dev": "node server/devServer.js",
     "lint": "eslint \"Assets/**/*.js\" \"server/**/*.js\"",
     "test": "jest",
-    "test:e2e": "node ./__tests__/smoke.e2e.test.js",
+    "test:e2e": "node ./__tests__/smoke.e2e.test.js && node ./__tests__/perf.e2e.test.js",
     "vercel-build": "echo \"static build\""
   },
   "dependencies": {
