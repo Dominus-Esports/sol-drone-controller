@@ -14,6 +14,11 @@
   "dependencies": {
     "express": "^4.19.2"
   },
+  "jest": {
+    "testMatch": ["**/__tests__/**/*.unit.test.js"],
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": ["/node_modules/", "/tests/", "/create-react-app/"]
+  },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
     "eslint": "^9.33.0",
