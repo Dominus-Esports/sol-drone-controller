@@ -1,0 +1,14 @@
+{
+  "name": "sol-drone-controller",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server/devServer.js",
+    "dev": "node server/devServer.js",
+    "test": "echo \"No tests yet\" && exit 0",
+    "vercel-build": "echo \"static build\""
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

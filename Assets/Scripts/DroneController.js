@@ -1,0 +1,173 @@
+(function() {
+  const canvas = document.getElementById('renderCanvas');
+  const engine = new BABYLON.Engine(canvas, true, { stencil: true, preserveDrawingBuffer: true });
+
+  const FlightMode = {
+    HOVER: 'HOVER',
+    JET: 'JET',
+    PRECISION: 'PRECISION',
+    TELEPORT: 'TELEPORT',
+    ENERGY_BLAST: 'ENERGY_BLAST',
+    ULTRA: 'ULTRA',
+  };
+
+  let currentMode = FlightMode.HOVER;
+  let ultraMode = false;
+
+  const state = {
+    position: new BABYLON.Vector3(0, 2, 0),
+    velocity: new BABYLON.Vector3(0, 0, 0),
+    energy: 100,
+    thrustPct: 0,
+    yaw: 0,
+    speedCap: 30,
+    teleports: 0,
+    blasts: 0,
+  };
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  const scene = new BABYLON.Scene(engine);
+  scene.clearColor = new BABYLON.Color4(0.04, 0.05, 0.08, 1);
+
+  const camera = new BABYLON.UniversalCamera('Camera', new BABYLON.Vector3(0, 2, -6), scene);
+  camera.attachControl(canvas, true);
+  camera.inertia = 0.1;
+  camera.angularSensibility = 800;
+
+  const light = new BABYLON.HemisphericLight('Light', new BABYLON.Vector3(0, 1, 0), scene);
+  light.intensity = 0.9;
+
+  const ground = BABYLON.MeshBuilder.CreateGround('Ground', { width: 200, height: 200 }, scene);
+  const groundMat = new BABYLON.StandardMaterial('GroundMat', scene);
+  groundMat.diffuseColor = new BABYLON.Color3(0.08, 0.1, 0.16);
+  ground.material = groundMat;
+
+  const player = BABYLON.MeshBuilder.CreateBox('Drone', { size: 0.4 }, scene);
+  player.position = state.position.clone();
+  const playerMat = new BABYLON.StandardMaterial('DroneMat', scene);
+  playerMat.emissiveColor = new BABYLON.Color3(0.4, 0.6, 1.0);
+  player.material = playerMat;
+
+  const keys = { w:false, a:false, s:false, d:false, space:false, shift:false, q:false, e:false, alt:false };
+
+  window.addEventListener('keydown', (e) => {
+    switch (e.key.toLowerCase()) {
+      case 'w': keys.w = true; break;
+      case 'a': keys.a = true; break;
+      case 's': keys.s = true; break;
+      case 'd': keys.d = true; break;
+      case ' ': keys.space = true; break;
+      case 'shift': keys.shift = true; break;
+      case 'q': keys.q = true; break;
+      case 'e': keys.e = true; break;
+      case 'alt': keys.alt = true; break;
+      case 'tab': e.preventDefault(); cycleMode(); break;
+      case 't': teleport(); break;
+      case 'b': energyBlast(); break;
+      case 'u': ultraMode = !ultraMode; break;
+    }
+  });
+  window.addEventListener('keyup', (e) => {
+    switch (e.key.toLowerCase()) {
+      case 'w': keys.w = false; break;
+      case 'a': keys.a = false; break;
+      case 's': keys.s = false; break;
+      case 'd': keys.d = false; break;
+      case ' ': keys.space = false; break;
+      case 'shift': keys.shift = false; break;
+      case 'q': keys.q = false; break;
+      case 'e': keys.e = false; break;
+      case 'alt': keys.alt = false; break;
+    }
+  });
+
+  function cycleMode() {
+    const order = [FlightMode.HOVER, FlightMode.JET, FlightMode.PRECISION, FlightMode.TELEPORT, FlightMode.ENERGY_BLAST, FlightMode.ULTRA];
+    const idx = order.indexOf(currentMode);
+    currentMode = order[(idx + 1) % order.length];
+  }
+
+  function teleport() {
+    const forward = camera.getDirection(BABYLON.Vector3.Forward());
+    const dest = player.position.add(forward.scale(ultraMode ? 50 : 20));
+    player.position.copyFrom(dest);
+    camera.position.copyFrom(dest.add(new BABYLON.Vector3(0, 1.6, -1.5)));
+    state.teleports += 1;
+  }
+
+  function energyBlast() {
+    const origin = player.position.add(new BABYLON.Vector3(0, 0.2, 0));
+    const blast = BABYLON.MeshBuilder.CreateSphere('Blast', { diameter: 0.2 }, scene);
+    const mat = new BABYLON.StandardMaterial('BlastMat', scene);
+    mat.emissiveColor = new BABYLON.Color3(0.6, 0.4, 1.0);
+    blast.material = mat;
+    blast.position.copyFrom(origin);
+    const dir = camera.getDirection(BABYLON.Vector3.Forward()).normalize();
+    const speed = ultraMode ? 100 : 50;
+    let life = 120;
+    scene.onBeforeRenderObservable.add(() => {
+      if (life-- <= 0) { blast.dispose(); return; }
+      blast.position.addInPlace(dir.scale(engine.getDeltaTime() / 1000 * speed));
+    });
+    state.blasts += 1;
+  }
+
+  function updateMovement(deltaSec) {
+    const forward = camera.getDirection(BABYLON.Vector3.Forward());
+    const right = camera.getDirection(BABYLON.Vector3.Right());
+    const up = BABYLON.Vector3.Up();
+
+    let accel = 20;
+    if (currentMode === FlightMode.JET) accel = 60;
+    if (currentMode === FlightMode.PRECISION || keys.alt) accel = 5;
+    if (ultraMode) accel *= 2.0;
+
+    let vel = state.velocity.clone();
+    if (keys.w) vel.addInPlace(forward.scale(accel * deltaSec));
+    if (keys.s) vel.addInPlace(forward.scale(-accel * deltaSec));
+    if (keys.d) vel.addInPlace(right.scale(accel * deltaSec));
+    if (keys.a) vel.addInPlace(right.scale(-accel * deltaSec));
+    if (keys.space) vel.addInPlace(up.scale(accel * deltaSec));
+    if (keys.shift) vel.addInPlace(up.scale(-accel * deltaSec));
+
+    const cap = ultraMode ? state.speedCap * 2 : state.speedCap;
+    if (vel.length() > cap) {
+      vel = vel.normalize().scale(cap);
+    }
+    state.velocity.copyFrom(vel);
+    player.position.addInPlace(state.velocity.scale(deltaSec));
+    camera.position.copyFrom(player.position.add(new BABYLON.Vector3(0, 1.6, -1.5)));
+
+    state.position.copyFrom(player.position);
+    state.thrustPct = clamp((vel.length() / cap) * 100, 0, 100);
+    state.energy = clamp(state.energy + (ultraMode ? -5 : -2) * deltaSec + 3 * deltaSec, 0, 100);
+  }
+
+  function updateHUD(deltaSec) {
+    if (window.SOL_HUD) {
+      window.SOL_HUD.Update({
+        mode: currentMode,
+        position: state.position,
+        velocity: state.velocity,
+        thrustPct: state.thrustPct,
+        energy: state.energy,
+        ultra: ultraMode,
+        stats: { teleports: state.teleports, blasts: state.blasts },
+        altitude: state.position.y
+      });
+    }
+  }
+
+  let last = performance.now();
+  engine.runRenderLoop(() => {
+    const now = performance.now();
+    const deltaSec = (now - last) / 1000;
+    last = now;
+    updateMovement(deltaSec);
+    updateHUD(deltaSec);
+    scene.render();
+  });
+
+  window.addEventListener('resize', () => engine.resize());
+})();
