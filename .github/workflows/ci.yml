@@ -25,6 +25,8 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report
+      - name: Enforce metrics thresholds (NDJSON)
+        run: node scripts/ci-assert-metrics.js
       - name: Performance thresholds
         run: |
           echo "Checking performance thresholds (placeholder)."

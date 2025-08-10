@@ -21,7 +21,7 @@
       const hudDiv = document.getElementById('hud');
       if (hudDiv) hudDiv.style.display = hud ? 'block' : 'none';
     }
-    return e('div', { style: { position:'absolute', top: 12, right: 12, background:'rgba(10,10,20,0.4)', padding: '10px 12px', borderRadius: 8, color:'#dfe6ff', pointerEvents:'auto', width: 240 } },
+    return e('div', { style: { position:'absolute', top: 12, right: 12, background:'rgba(10,10,20,0.4)', padding: '10px 12px', borderRadius: 8, color:'#dfe6ff', pointerEvents:'auto', width: 260 } },
       e('div', { style:{ marginBottom: 6 } }, 'Mode: ', e('strong', null, mode)),
       e('label', { style:{ display:'block', fontSize:12 } },
         e('input', { type:'checkbox', checked: hud, onChange: e=>setHud(e.target.checked) }), ' Show HUD'
