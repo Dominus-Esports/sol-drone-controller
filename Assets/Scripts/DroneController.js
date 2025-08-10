@@ -38,6 +38,7 @@
   camera.attachControl(canvas, true);
   camera.inertia = 0.1;
   camera.angularSensibility = 800;
+  camera.setTarget(BABYLON.Vector3.Zero());
 
   const light = new BABYLON.HemisphericLight('Light', new BABYLON.Vector3(0, 1, 0), scene);
   light.intensity = 0.9;

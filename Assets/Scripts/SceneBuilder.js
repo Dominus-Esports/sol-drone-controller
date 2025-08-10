@@ -1,6 +1,6 @@
 (function(){
   async function createChessboardGround(scene) {
-    const size = 100;
+    const size = 120;
     const ground = BABYLON.MeshBuilder.CreateGround('ChessGround', { width: size, height: size, subdivisions: 2 }, scene);
     const mat = new BABYLON.StandardMaterial('ChessMat', scene);
     const tex = new BABYLON.DynamicTexture('ChessTex', { width: 1024, height: 1024 }, scene, true);
@@ -30,6 +30,7 @@
     mat.diffuseTexture = tex;
     mat.specularColor = new BABYLON.Color3(0,0,0);
     ground.material = mat;
+    ground.position.y = 0;
     return ground;
   }
 
