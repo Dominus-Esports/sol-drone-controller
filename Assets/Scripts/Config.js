@@ -1,3 +1,6 @@
+const isVercel = (typeof location !== 'undefined') && /vercel\.app$/.test(location.hostname);
+const isProdStatic = (typeof location !== 'undefined') && location.protocol === 'https:' && !location.port;
+
 window.SOL_Config = {
   acceleration: {
     base: 20,
@@ -18,7 +21,7 @@ window.SOL_Config = {
     glowSuperman: 0.3
   },
   telemetry: {
-    wsEnabled: true,
+    wsEnabled: !(isVercel || isProdStatic),
     wsUrl: (typeof location !== 'undefined') ? `ws://${location.hostname}:8080/ws` : 'ws://localhost:8080/ws',
     sendIntervalMs: 200
   }
