@@ -30,9 +30,29 @@
 
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = new BABYLON.Color4(0.04, 0.05, 0.08, 1);
-  if (window.SOL_BuildSceneExtras) {
-    window.SOL_BuildSceneExtras(scene);
+  async function buildScene() {
+    try {
+      if (window.SOL_BuildSceneExtras) {
+        await window.SOL_BuildSceneExtras(scene);
+      }
+    } catch (err) {
+      // Fallback ground if extras fail
+      const fallback = BABYLON.MeshBuilder.CreateGround('FallbackGround', { width: 80, height: 80 }, scene);
+      const m = new BABYLON.StandardMaterial('FallbackMat', scene);
+      m.diffuseColor = new BABYLON.Color3(0.15, 0.2, 0.32);
+      fallback.material = m;
+    }
+    // Ensure there is at least one ground
+    setTimeout(() => {
+      if (!scene.getMeshByName('ChessGround') && !scene.getMeshByName('FallbackGround')) {
+        const g = BABYLON.MeshBuilder.CreateGround('AutoGround', { width: 80, height: 80 }, scene);
+        const gm = new BABYLON.StandardMaterial('AutoMat', scene);
+        gm.diffuseColor = new BABYLON.Color3(0.12, 0.16, 0.26);
+        g.material = gm;
+      }
+    }, 200);
   }
+  buildScene();
 
   const camera = new BABYLON.UniversalCamera('Camera', new BABYLON.Vector3(0, 2, -6), scene);
   camera.attachControl(canvas, true);
