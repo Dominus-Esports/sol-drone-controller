@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node server/devServer.js",
     "dev": "node server/devServer.js",
+    "lint": "eslint \"Assets/**/*.js\" \"server/**/*.js\"",
     "test": "jest",
     "test:e2e": "node ./__tests__/smoke.e2e.test.js",
     "vercel-build": "echo \"static build\""
@@ -13,7 +14,10 @@
     "express": "^4.19.2"
   },
   "devDependencies": {
+    "eslint": "^9.33.0",
     "jest": "^29.7.0",
-    "puppeteer": "^22.15.0"
+    "prettier": "^3.6.2",
+    "puppeteer": "^22.15.0",
+    "ws": "^8.18.3"
   }
 }

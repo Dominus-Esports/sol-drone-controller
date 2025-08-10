@@ -270,6 +270,20 @@
     );
   }
 
+  // Provide telemetry snapshot for WebSocket sender
+  if (window.SOL_RegisterTelemetrySource) {
+    window.SOL_RegisterTelemetrySource(() => ({
+      mode: currentMode,
+      pos: { x: state.position.x, y: state.position.y, z: state.position.z },
+      vel: { x: state.velocity.x, y: state.velocity.y, z: state.velocity.z },
+      ultra: ultraMode,
+      superman: supermanMode,
+      thrust: state.thrustPct,
+      energy: state.energy,
+      ts: Date.now()
+    }));
+  }
+
   let last = performance.now();
   engine.runRenderLoop(() => {
     const now = performance.now();

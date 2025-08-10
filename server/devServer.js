@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+const http = require('http');
+const { startWebSocketServer } = require('./wsServer');
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
@@ -17,6 +19,8 @@ app.get('/', (_req, res) => {
   res.sendFile(path.join(rootDir, 'Assets', 'Scenes', 'SOL_Superman_Drone_Controller.html'));
 });
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+startWebSocketServer(server);
+server.listen(PORT, () => {
   console.log(`[S.O.L] Dev server running at http://localhost:${PORT}`);
 });
