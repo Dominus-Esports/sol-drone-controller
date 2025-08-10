@@ -1,6 +1,6 @@
 // Web Vitals + FPS sampler to /api/metrics
 (function(){
-  const endpoint = '/api/metrics';
+  const endpoint = '/api/metrics'; // dev writes to file via Express; on Vercel logs to console handler
   function post(data){
     try { navigator.sendBeacon(endpoint, JSON.stringify(data)); }
     catch { fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }); }

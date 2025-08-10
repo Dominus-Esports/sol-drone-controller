@@ -19,5 +19,14 @@ jobs:
       - run: npm test --silent
       - run: npx playwright install --with-deps
       - run: npm run test:pw --silent
+      - name: Performance thresholds
+        run: |
+          echo "Checking performance thresholds (placeholder)."
+          # In a real pipeline, fetch metrics artifacts or run a headless sample
+          # Fail CI if env-provided thresholds indicate regression
+          LCP_MS=${LCP_MS:-2000}
+          FPS_IDLE=${FPS_IDLE:-60}
+          if [ "$LCP_MS" -gt 2500 ]; then echo "LCP too high: $LCP_MS ms"; exit 1; fi
+          if [ "$FPS_IDLE" -lt 50 ]; then echo "FPS too low: $FPS_IDLE"; exit 1; fi
 
 
