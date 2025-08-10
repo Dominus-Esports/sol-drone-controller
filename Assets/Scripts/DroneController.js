@@ -54,6 +54,36 @@
   const glow = new BABYLON.GlowLayer('glow', scene, { blurKernelSize: 64 });
   glow.intensity = 0.0;
 
+  // Player trail (lines)
+  const trailMaxPoints = 60;
+  const trailPoints = [];
+  let trailLines = null;
+
+  // Speed lines pool
+  const speedLines = [];
+  const maxSpeedLines = 24;
+  function spawnSpeedLine(speedMagnitude) {
+    if (speedLines.length >= maxSpeedLines) return;
+    const line = BABYLON.MeshBuilder.CreateBox('SpeedLine', { width: 0.02, height: 0.02, depth: 0.8 }, scene);
+    line.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+    const mat = new BABYLON.StandardMaterial('SpeedLineMat', scene);
+    mat.emissiveColor = new BABYLON.Color3(0.7, 0.8, 1.0);
+    mat.alpha = 0.85;
+    line.material = mat;
+    // Place a bit in front of camera with random offset
+    const fwd = camera.getDirection(BABYLON.Vector3.Forward()).normalize();
+    const right = camera.getDirection(BABYLON.Vector3.Right()).normalize();
+    const up = BABYLON.Vector3.Up();
+    const dist = 1.2 + Math.random() * 0.8;
+    const offR = (Math.random() - 0.5) * 0.6;
+    const offU = (Math.random() - 0.5) * 0.6;
+    const startPos = camera.position.add(fwd.scale(dist)).add(right.scale(offR)).add(up.scale(offU));
+    line.position.copyFrom(startPos);
+    const life = 14 + Math.floor(Math.random() * 10);
+    const speedFactor = Math.min(2.5, 0.5 + speedMagnitude / 20);
+    speedLines.push({ mesh: line, mat, life, speedFactor });
+  }
+
   const keys = { w:false, a:false, s:false, d:false, space:false, shift:false, q:false, e:false, alt:false };
 
   window.addEventListener('keydown', (e) => {
@@ -185,6 +215,37 @@
     state.position.copyFrom(player.position);
     state.thrustPct = clamp((vel.length() / cap) * 100, 0, 100);
     state.energy = clamp(state.energy + (ultraMode ? -5 : -2) * deltaSec + 3 * deltaSec, 0, 100);
+
+    // Update player trail
+    trailPoints.push(player.position.clone());
+    if (trailPoints.length > trailMaxPoints) trailPoints.shift();
+    if (trailLines === null) {
+      trailLines = BABYLON.MeshBuilder.CreateLines('PlayerTrail', { points: trailPoints, updatable: true }, scene);
+      trailLines.color = new BABYLON.Color3(0.6, 0.7, 1.0);
+    } else {
+      BABYLON.MeshBuilder.CreateLines('PlayerTrail', { points: trailPoints, instance: trailLines }, scene);
+    }
+
+    // Spawn and update speed lines when moving fast
+    const speedMag = state.velocity.length();
+    if (speedMag > 10) {
+      // Spawn a few based on speed
+      const toSpawn = Math.min(3, 1 + Math.floor(speedMag / 20));
+      for (let i = 0; i < toSpawn; i += 1) spawnSpeedLine(speedMag);
+    }
+    for (let i = speedLines.length - 1; i >= 0; i -= 1) {
+      const sl = speedLines[i];
+      sl.life -= 1;
+      // Move towards camera a bit to simulate streaks
+      const fwd = camera.getDirection(BABYLON.Vector3.Forward()).normalize();
+      sl.mesh.position.addInPlace(fwd.scale(0.06 * sl.speedFactor));
+      sl.mesh.scaling.z = 0.8 + (sl.speedFactor - 0.5) * 0.8;
+      sl.mat.alpha *= 0.94;
+      if (sl.life <= 0) {
+        sl.mesh.dispose();
+        speedLines.splice(i, 1);
+      }
+    }
   }
 
   function updateHUD(deltaSec) {

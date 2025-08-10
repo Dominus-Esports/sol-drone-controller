@@ -5,10 +5,15 @@
   "scripts": {
     "start": "node server/devServer.js",
     "dev": "node server/devServer.js",
-    "test": "echo \"No tests yet\" && exit 0",
+    "test": "jest",
+    "test:e2e": "node ./__tests__/smoke.e2e.test.js",
     "vercel-build": "echo \"static build\""
   },
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "puppeteer": "^22.15.0"
   }
 }
