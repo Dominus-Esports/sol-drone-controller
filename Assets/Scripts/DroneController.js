@@ -13,6 +13,7 @@
 
   let currentMode = FlightMode.HOVER;
   let ultraMode = false;
+  let supermanMode = false;
 
   const state = {
     position: new BABYLON.Vector3(0, 2, 0),
@@ -49,6 +50,10 @@
   playerMat.emissiveColor = new BABYLON.Color3(0.4, 0.6, 1.0);
   player.material = playerMat;
 
+  // Aura/Glow for Ultra/Superman
+  const glow = new BABYLON.GlowLayer('glow', scene, { blurKernelSize: 64 });
+  glow.intensity = 0.0;
+
   const keys = { w:false, a:false, s:false, d:false, space:false, shift:false, q:false, e:false, alt:false };
 
   window.addEventListener('keydown', (e) => {
@@ -66,6 +71,7 @@
       case 't': teleport(); break;
       case 'b': energyBlast(); break;
       case 'u': ultraMode = !ultraMode; break;
+      case 'g': supermanMode = !supermanMode; break;
     }
   });
   window.addEventListener('keyup', (e) => {
@@ -122,6 +128,7 @@
     if (currentMode === FlightMode.JET) accel = 60;
     if (currentMode === FlightMode.PRECISION || keys.alt) accel = 5;
     if (ultraMode) accel *= 2.0;
+    if (supermanMode) accel *= 1.5;
 
     let vel = state.velocity.clone();
     if (keys.w) vel.addInPlace(forward.scale(accel * deltaSec));
@@ -131,13 +138,19 @@
     if (keys.space) vel.addInPlace(up.scale(accel * deltaSec));
     if (keys.shift) vel.addInPlace(up.scale(-accel * deltaSec));
 
-    const cap = ultraMode ? state.speedCap * 2 : state.speedCap;
+    const capBase = state.speedCap * (supermanMode ? 1.5 : 1);
+    const cap = ultraMode ? capBase * 2 : capBase;
     if (vel.length() > cap) {
       vel = vel.normalize().scale(cap);
     }
     state.velocity.copyFrom(vel);
     player.position.addInPlace(state.velocity.scale(deltaSec));
     camera.position.copyFrom(player.position.add(new BABYLON.Vector3(0, 1.6, -1.5)));
+
+    // Q/E yaw rotation
+    const yawSpeed = (ultraMode ? 2.0 : 1.0) * (supermanMode ? 1.25 : 1.0) * 1.5; // rad/sec
+    if (keys.q) camera.rotation.y -= yawSpeed * deltaSec;
+    if (keys.e) camera.rotation.y += yawSpeed * deltaSec;
 
     state.position.copyFrom(player.position);
     state.thrustPct = clamp((vel.length() / cap) * 100, 0, 100);
@@ -152,11 +165,18 @@
         velocity: state.velocity,
         thrustPct: state.thrustPct,
         energy: state.energy,
-        ultra: ultraMode,
+        ultra: ultraMode || supermanMode,
         stats: { teleports: state.teleports, blasts: state.blasts },
         altitude: state.position.y
       });
     }
+    // Visual aura intensity
+    glow.intensity = (ultraMode ? 0.8 : 0) + (supermanMode ? 0.3 : 0);
+    player.material.emissiveColor = new BABYLON.Color3(
+      0.3 + (ultraMode ? 0.4 : 0) + (supermanMode ? 0.2 : 0),
+      0.5 + (ultraMode ? 0.2 : 0),
+      1.0
+    );
   }
 
   let last = performance.now();
@@ -170,4 +190,14 @@
   });
 
   window.addEventListener('resize', () => engine.resize());
+
+  // Pointer lock for mouse look
+  const centerPrompt = document.getElementById('centerPrompt');
+  canvas.addEventListener('click', () => {
+    if (canvas.requestPointerLock) canvas.requestPointerLock();
+  });
+  document.addEventListener('pointerlockchange', () => {
+    const locked = document.pointerLockElement === canvas;
+    if (centerPrompt) centerPrompt.style.display = locked ? 'none' : 'block';
+  });
 })();
