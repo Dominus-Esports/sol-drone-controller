@@ -102,6 +102,11 @@
       case 'b': energyBlast(); break;
       case 'u': ultraMode = !ultraMode; if (window.SOL_Audio) window.SOL_Audio.PlayPowerUp({}); break;
       case 'g': supermanMode = !supermanMode; if (window.SOL_Audio) window.SOL_Audio.PlayPowerUp({}); break;
+      case 'h': {
+        const hud = document.getElementById('hud');
+        if (hud) hud.style.display = (hud.style.display === 'none') ? 'block' : 'none';
+        break;
+      }
     }
   });
   window.addEventListener('keyup', (e) => {

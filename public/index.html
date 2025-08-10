@@ -8,10 +8,10 @@
     <style>
       html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #0b0b14; }
       #renderCanvas { width: 100%; height: 100%; touch-action: none; display: block; }
-      #hud { position: fixed; top: 12px; left: 12px; color: #dfe6ff; font-family: Arial, sans-serif; background: rgba(10,10,20,0.5); padding: 10px 12px; border-radius: 8px; line-height: 1.4; }
+      #hud { position: fixed; top: 12px; left: 12px; color: #dfe6ff; font-family: Arial, sans-serif; background: rgba(10,10,20,0.5); padding: 10px 12px; border-radius: 8px; line-height: 1.4; pointer-events: none; }
       .mode { font-weight: bold; color: #9ecbff; }
       .ultra { color: #c89bff; font-weight: bold; }
-      #centerPrompt { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ffffff; opacity: 0.85; font-size: 14px; text-align: center; }
+      #centerPrompt { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: #cfd7ff; opacity: 0.75; font-size: 12px; text-align: center; pointer-events: none; }
     </style>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
@@ -22,15 +22,16 @@
   <body>
     <canvas id="renderCanvas"></canvas>
     <div id="hud"></div>
-    <div id="centerPrompt">Click to lock mouse. WASD move, Q/E yaw, Space/Shift up/down. Tab modes. T teleport. B blast. U ultra.</div>
+    <div id="centerPrompt">Click to lock mouse. WASD move, Q/E yaw, Space/Shift up/down. Tab modes. T teleport. B blast. U ultra. H hide HUD.</div>
     <div id="ui-root" style="position:fixed; inset:0; pointer-events:none;"></div>
-    <script src="/Assets/Scripts/Config.js"></script>
-    <script src="/Assets/Scripts/SceneBuilder.js"></script>
-    <script src="/Assets/Scripts/UIRoot.js"></script>
-    <script src="/Assets/Scripts/AudioManager.js"></script>
-    <script src="/Assets/Scripts/Telemetry.js"></script>
-    <script src="/Assets/Scripts/HUD.js"></script>
-    <script src="/Assets/Scripts/DroneController.js"></script>
+    <script>setTimeout(()=>{ var p=document.getElementById('centerPrompt'); if(p) p.style.display='none'; }, 5000);</script>
+    <script src="/Assets/Scripts/Config.js?v=2"></script>
+    <script src="/Assets/Scripts/SceneBuilder.js?v=2"></script>
+    <script src="/Assets/Scripts/UIRoot.js?v=2"></script>
+    <script src="/Assets/Scripts/AudioManager.js?v=2"></script>
+    <script src="/Assets/Scripts/Telemetry.js?v=2"></script>
+    <script src="/Assets/Scripts/HUD.js?v=2"></script>
+    <script src="/Assets/Scripts/DroneController.js?v=2"></script>
   </body>
   </html>
 
