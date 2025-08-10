@@ -31,4 +31,8 @@ Controls
 - WASD move, Q/E yaw, Space/Shift up/down, Alt precision
 - Tab cycle modes, T teleport, B energy blast, U ultra, Mouse look
 
+Docs
+
+- See docs/ for Overview, Controls, Flight Modes, HUD, VFX & Audio, Architecture, Deployment, Kubernetes, Testing, and Roadmap.
+
 License: MIT

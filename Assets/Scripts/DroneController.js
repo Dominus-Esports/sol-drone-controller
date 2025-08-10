@@ -70,8 +70,8 @@
       case 'tab': e.preventDefault(); cycleMode(); break;
       case 't': teleport(); break;
       case 'b': energyBlast(); break;
-      case 'u': ultraMode = !ultraMode; break;
-      case 'g': supermanMode = !supermanMode; break;
+      case 'u': ultraMode = !ultraMode; if (window.SOL_Audio) window.SOL_Audio.PlayPowerUp({}); break;
+      case 'g': supermanMode = !supermanMode; if (window.SOL_Audio) window.SOL_Audio.PlayPowerUp({}); break;
     }
   });
   window.addEventListener('keyup', (e) => {
@@ -100,6 +100,20 @@
     player.position.copyFrom(dest);
     camera.position.copyFrom(dest.add(new BABYLON.Vector3(0, 1.6, -1.5)));
     state.teleports += 1;
+    if (window.SOL_Audio) window.SOL_Audio.PlaySweep({ startFreq: 3000, endFreq: 200 });
+    // Teleport burst effect
+    const burst = BABYLON.MeshBuilder.CreateSphere('TeleportBurst', { diameter: 0.4 }, scene);
+    const mat = new BABYLON.StandardMaterial('TeleportBurstMat', scene);
+    mat.emissiveColor = new BABYLON.Color3(0.8, 0.6, 1.0);
+    mat.alpha = 0.8;
+    burst.material = mat;
+    burst.position.copyFrom(dest);
+    let life = 20;
+    scene.onBeforeRenderObservable.add(() => {
+      if (life-- <= 0) { burst.dispose(); return; }
+      burst.scaling.addInPlace(new BABYLON.Vector3(0.2, 0.2, 0.2));
+      mat.alpha *= 0.9;
+    });
   }
 
   function energyBlast() {
@@ -112,9 +126,25 @@
     const dir = camera.getDirection(BABYLON.Vector3.Forward()).normalize();
     const speed = ultraMode ? 100 : 50;
     let life = 120;
+    if (window.SOL_Audio) window.SOL_Audio.PlayImpact({ freq: 90 });
     scene.onBeforeRenderObservable.add(() => {
       if (life-- <= 0) { blast.dispose(); return; }
       blast.position.addInPlace(dir.scale(engine.getDeltaTime() / 1000 * speed));
+      // simple trail
+      if (life % 6 === 0) {
+        const trail = BABYLON.MeshBuilder.CreateSphere('Trail', { diameter: 0.08 }, scene);
+        const tmat = new BABYLON.StandardMaterial('TrailMat', scene);
+        tmat.emissiveColor = new BABYLON.Color3(0.5, 0.3, 1.0);
+        tmat.alpha = 0.6;
+        trail.material = tmat;
+        trail.position.copyFrom(blast.position);
+        let tlife = 15;
+        scene.onBeforeRenderObservable.add(() => {
+          if (tlife-- <= 0) { trail.dispose(); return; }
+          trail.scaling.scaleInPlace(0.95);
+          tmat.alpha *= 0.9;
+        });
+      }
     });
     state.blasts += 1;
   }
