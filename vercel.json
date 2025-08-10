@@ -1,7 +1,4 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    { "source": "/", "destination": "/Assets/Scenes/SOL_Superman_Drone_Controller.html" }
-  ]
+  "trailingSlash": false
 }
