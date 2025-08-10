@@ -45,6 +45,9 @@
   window.SOL_BuildSceneExtras = async function(scene) {
     await enableHavok(scene);
     await createChessboardGround(scene);
+    // Ambient light adjustments
+    const hemi = scene.lights.find(l => l instanceof BABYLON.HemisphericLight);
+    if (hemi) hemi.intensity = 0.95;
   };
 })();
 

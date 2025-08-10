@@ -242,13 +242,20 @@
     camera.position.copyFrom(player.position.add(new BABYLON.Vector3(0, 1.6, -1.5)));
 
     // Q/E yaw rotation
-    const yawSpeed = (ultraMode ? 2.0 : 1.0) * (supermanMode ? 1.25 : 1.0) * 1.5; // rad/sec
+    const yawBase = window.SOL_Config?.controls?.yawSensitivity || 1.5;
+    const yawSpeed = (ultraMode ? 2.0 : 1.0) * (supermanMode ? 1.25 : 1.0) * yawBase; // rad/sec
     if (keys.q) camera.rotation.y -= yawSpeed * deltaSec;
     if (keys.e) camera.rotation.y += yawSpeed * deltaSec;
 
     state.position.copyFrom(player.position);
     state.thrustPct = clamp((vel.length() / cap) * 100, 0, 100);
     state.energy = clamp(state.energy + (ultraMode ? -5 : -2) * deltaSec + 3 * deltaSec, 0, 100);
+    if (window.SOL_Config?.physics?.clampAltitude) {
+      const minY = window.SOL_Config.physics.minY ?? 0.5;
+      const maxY = window.SOL_Config.physics.maxY ?? 150;
+      if (player.position.y < minY) player.position.y = minY;
+      if (player.position.y > maxY) player.position.y = maxY;
+    }
 
     // Update player trail
     trailPoints.push(player.position.clone());

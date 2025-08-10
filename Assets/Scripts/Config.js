@@ -10,6 +10,9 @@ window.SOL_Config = {
     supermanMultiplier: 1.5
   },
   speedCap: 30,
+  controls: {
+    yawSensitivity: 1.5
+  },
   teleport: {
     distance: 20,
     ultraMultiplier: 2.5
@@ -20,6 +23,14 @@ window.SOL_Config = {
     glowUltra: 0.8,
     glowSuperman: 0.3,
     enableSpeedLines: !(isVercel || isProdStatic) // disable on Vercel for clean UI
+  },
+  hud: {
+    show: true
+  },
+  physics: {
+    clampAltitude: true,
+    minY: 0.5,
+    maxY: 150
   },
   telemetry: {
     wsEnabled: !(isVercel || isProdStatic),
