@@ -4,6 +4,7 @@
   function post(data){
     try { navigator.sendBeacon(endpoint, JSON.stringify(data)); }
     catch { fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }); }
+    if (window.SOL_MetricsDB) window.SOL_MetricsDB.saveMetric(data);
   }
 
   // FPS sampling

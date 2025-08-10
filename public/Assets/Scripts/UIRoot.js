@@ -30,7 +30,11 @@
       e('input', { type:'number', min:10, max:200, step:5, value: speedCap, onChange: e=>setSpeedCap(e.target.value), style:{ width:'100%' } }),
       e('label', { style:{ display:'block', marginTop:6, fontSize:12 } }, 'Yaw Sensitivity'),
       e('input', { type:'number', min:0.5, max:4, step:0.1, value: yaw, onChange: e=>setYaw(e.target.value), style:{ width:'100%' } }),
-      e('button', { onClick: apply, style:{ marginTop:8, width:'100%' } }, 'Apply')
+      e('button', { onClick: apply, style:{ marginTop:8, width:'100%' } }, 'Apply'),
+      e('div', { style:{ display:'flex', gap:8, marginTop:8 } },
+        e('button', { onClick: ()=>window.SOL_MetricsDB && window.SOL_MetricsDB.exportNDJSON(), style:{ flex:1 } }, 'Export Metrics'),
+        e('button', { onClick: async()=>{ if(window.SOL_MetricsDB){ await window.SOL_MetricsDB.clearMetrics(); alert('Cleared'); } }, style:{ flex:1 } }, 'Clear')
+      )
     );
   }
   function initUI(){
