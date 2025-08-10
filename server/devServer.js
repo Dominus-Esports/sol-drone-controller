@@ -7,11 +7,14 @@ const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
 
 const rootDir = path.join(__dirname, '..');
+const publicDir = path.join(rootDir, 'public');
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'S.O.L. Drone Controller', time: new Date().toISOString() });
 });
 
+app.use('/', express.static(publicDir));
+app.use('/Assets', express.static(path.join(publicDir, 'Assets')));
 app.use('/Assets', express.static(path.join(rootDir, 'Assets')));
 app.use('/', express.static(rootDir));
 
