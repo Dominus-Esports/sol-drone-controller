@@ -21,6 +21,18 @@
       const hudDiv = document.getElementById('hud');
       if (hudDiv) hudDiv.style.display = hud ? 'block' : 'none';
     }
+    // React HUD readout
+    const hudBox = e('div', { style: { marginTop: 8, fontSize: 12, background:'rgba(10,10,20,0.35)', padding: 8, borderRadius: 6 } },
+      window.SOL_LastHUD ? [
+        e('div', { key:'m' }, `Mode: ${window.SOL_LastHUD.mode}${window.SOL_LastHUD.ultra ? ' (ULTRA)' : ''}`),
+        e('div', { key:'p' }, `Pos: (${window.SOL_LastHUD.position.x.toFixed(2)}, ${window.SOL_LastHUD.position.y.toFixed(2)}, ${window.SOL_LastHUD.position.z.toFixed(2)})`),
+        e('div', { key:'v' }, `Vel: ${window.SOL_LastHUD.velocity.length().toFixed(2)}`),
+        e('div', { key:'t' }, `Thrust: ${window.SOL_LastHUD.thrustPct.toFixed(0)}%  Energy: ${window.SOL_LastHUD.energy.toFixed(0)}%`),
+        e('div', { key:'a' }, `Alt: ${window.SOL_LastHUD.altitude.toFixed(2)}`),
+        e('div', { key:'s' }, `Teleports: ${window.SOL_LastHUD.stats.teleports}  Blasts: ${window.SOL_LastHUD.stats.blasts}`)
+      ] : e('div', null, 'HUD: no data yet')
+    );
+
     return e('div', { style: { position:'absolute', top: 12, right: 12, background:'rgba(10,10,20,0.4)', padding: '10px 12px', borderRadius: 8, color:'#dfe6ff', pointerEvents:'auto', width: 260 } },
       e('div', { style:{ marginBottom: 6 } }, 'Mode: ', e('strong', null, mode)),
       e('label', { style:{ display:'block', fontSize:12 } },
@@ -34,7 +46,8 @@
       e('div', { style:{ display:'flex', gap:8, marginTop:8 } },
         e('button', { onClick: ()=>window.SOL_MetricsDB && window.SOL_MetricsDB.exportNDJSON(), style:{ flex:1 } }, 'Export Metrics'),
         e('button', { onClick: async()=>{ if(window.SOL_MetricsDB){ await window.SOL_MetricsDB.clearMetrics(); alert('Cleared'); } }, style:{ flex:1 } }, 'Clear')
-      )
+      ),
+      hudBox
     );
   }
   function initUI(){
