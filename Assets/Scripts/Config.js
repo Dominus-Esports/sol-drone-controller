@@ -18,7 +18,8 @@ window.SOL_Config = {
     trailMaxPoints: 60,
     glowBase: 0.0,
     glowUltra: 0.8,
-    glowSuperman: 0.3
+    glowSuperman: 0.3,
+    enableSpeedLines: !(isVercel || isProdStatic) // disable on Vercel for clean UI
   },
   telemetry: {
     wsEnabled: !(isVercel || isProdStatic),

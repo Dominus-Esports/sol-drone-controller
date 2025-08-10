@@ -1,6 +1,12 @@
 (function() {
   const canvas = document.getElementById('renderCanvas');
-  const engine = new BABYLON.Engine(canvas, true, { stencil: true, preserveDrawingBuffer: true });
+  const engine = new BABYLON.Engine(canvas, true, {
+    stencil: true,
+    preserveDrawingBuffer: false,
+    disableWebGL2Support: false,
+    antialias: true,
+    adaptToDeviceRatio: true
+  });
 
   const FlightMode = {
     HOVER: 'HOVER',
@@ -80,10 +86,12 @@
   const trailPoints = [];
   let trailLines = null;
 
-  // Speed lines pool
+  // Speed lines pool (disabled in production by config)
   const speedLines = [];
-  const maxSpeedLines = 24;
+  const maxSpeedLines = 16;
   function spawnSpeedLine(speedMagnitude) {
+    if (!window.SOL_Config?.visuals?.enableSpeedLines) return;
+    if (document.pointerLockElement !== canvas) return;
     if (speedLines.length >= maxSpeedLines) return;
     const line = BABYLON.MeshBuilder.CreateBox('SpeedLine', { width: 0.02, height: 0.02, depth: 0.8 }, scene);
     line.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
@@ -254,7 +262,7 @@
 
     // Spawn and update speed lines when moving fast
     const speedMag = state.velocity.length();
-    if (speedMag > 10) {
+    if (window.SOL_Config?.visuals?.enableSpeedLines && document.pointerLockElement === canvas && speedMag > 10) {
       // Spawn a few based on speed
       const toSpawn = Math.min(3, 1 + Math.floor(speedMag / 20));
       for (let i = 0; i < toSpawn; i += 1) spawnSpeedLine(speedMag);
