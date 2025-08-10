@@ -30,6 +30,9 @@
 
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = new BABYLON.Color4(0.04, 0.05, 0.08, 1);
+  if (window.SOL_BuildSceneExtras) {
+    window.SOL_BuildSceneExtras(scene);
+  }
 
   const camera = new BABYLON.UniversalCamera('Camera', new BABYLON.Vector3(0, 2, -6), scene);
   camera.attachControl(canvas, true);

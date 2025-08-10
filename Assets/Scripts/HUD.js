@@ -5,6 +5,7 @@
   }
   window.SOL_HUD = {
     Update(data) {
+      window.SOL_LastHUD = data;
       const speed = data.velocity.length().toFixed(2);
       hud.innerHTML = `
         <div>Flight Mode: <span class="mode">${data.mode}</span> <span class="${data.ultra ? 'ultra' : ''}">${data.ultra ? 'ULTRA' : ''}</span></div>

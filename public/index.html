@@ -15,12 +15,18 @@
     </style>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   </head>
   <body>
     <canvas id="renderCanvas"></canvas>
     <div id="hud"></div>
     <div id="centerPrompt">Click to lock mouse. WASD move, Q/E yaw, Space/Shift up/down. Tab modes. T teleport. B blast. U ultra.</div>
+    <div id="ui-root" style="position:fixed; inset:0; pointer-events:none;"></div>
     <script src="/Assets/Scripts/Config.js"></script>
+    <script src="/Assets/Scripts/SceneBuilder.js"></script>
+    <script src="/Assets/Scripts/UIRoot.js"></script>
     <script src="/Assets/Scripts/AudioManager.js"></script>
     <script src="/Assets/Scripts/Telemetry.js"></script>
     <script src="/Assets/Scripts/HUD.js"></script>
