@@ -36,7 +36,22 @@ window.SOL_Config = {
     wsEnabled: !(isVercel || isProdStatic),
     wsUrl: (typeof location !== 'undefined') ? `ws://${location.hostname}:8080/ws` : 'ws://localhost:8080/ws',
     sendIntervalMs: 200
+  },
+  world: {
+    // 1 unit == 1 meter by default
+    unitsPerMeter: 1,
+    // Size of each procedural tile in meters
+    tileSizeMeters: 200,
+    // Number of tiles to keep loaded in +/- radius around player
+    renderRadiusTiles: 3,
+    // Keep player near origin by shifting world content
+    floatingOrigin: true,
+    // Distance from origin (meters) before recenting world
+    recenterThresholdMeters: 500,
+    enableChessboardOverlay: false
+  },
+  optimize: {
+    // 'none' | 'low' | 'moderate' | 'high'
+    sceneOptimizer: 'moderate'
   }
 };
-
-

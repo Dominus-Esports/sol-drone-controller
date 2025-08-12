@@ -36,9 +36,11 @@
 
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = new BABYLON.Color4(0.04, 0.05, 0.08, 1);
+  // Initialize streaming world (meter-based tiles with floating origin)
+  const world = (typeof window.SOL_World === 'function') ? new window.SOL_World(scene) : null;
   async function buildScene() {
     try {
-      if (window.SOL_BuildSceneExtras) {
+      if (window.SOL_Config?.world?.enableChessboardOverlay && window.SOL_BuildSceneExtras) {
         await window.SOL_BuildSceneExtras(scene);
       }
     } catch (err) {
@@ -68,6 +70,22 @@
 
   const light = new BABYLON.HemisphericLight('Light', new BABYLON.Vector3(0, 1, 0), scene);
   light.intensity = 0.9;
+
+  // Simple performance adaptive scaling per Babylon guidance
+  engine.setHardwareScalingLevel(1.0);
+  let fpsCheckTime = performance.now();
+  scene.onAfterRenderObservable.add(() => {
+    const now = performance.now();
+    if (now - fpsCheckTime > 2000) { // every 2s
+      const fps = engine.getFps();
+      if (fps < 40) {
+        engine.setHardwareScalingLevel(Math.min(2.0, engine.getHardwareScalingLevel() + 0.1));
+      } else if (fps > 58) {
+        engine.setHardwareScalingLevel(Math.max(1.0, engine.getHardwareScalingLevel() - 0.05));
+      }
+      fpsCheckTime = now;
+    }
+  });
 
   // Ground is provided by SceneBuilder (chessboard). Remove legacy flat ground.
 
@@ -172,6 +190,7 @@
     mat.alpha = 0.8;
     burst.material = mat;
     burst.position.copyFrom(dest);
+    if (world) burst.parent = world.getRoot();
     let life = 20;
     scene.onBeforeRenderObservable.add(() => {
       if (life-- <= 0) { burst.dispose(); return; }
@@ -187,6 +206,7 @@
     mat.emissiveColor = new BABYLON.Color3(0.6, 0.4, 1.0);
     blast.material = mat;
     blast.position.copyFrom(origin);
+    if (world) blast.parent = world.getRoot();
     const dir = camera.getDirection(BABYLON.Vector3.Forward()).normalize();
     const speed = ultraMode ? 100 : 50;
     let life = 120;
@@ -202,6 +222,7 @@
         tmat.alpha = 0.6;
         trail.material = tmat;
         trail.position.copyFrom(blast.position);
+        if (world) trail.parent = world.getRoot();
         let tlife = 15;
         scene.onBeforeRenderObservable.add(() => {
           if (tlife-- <= 0) { trail.dispose(); return; }
@@ -263,6 +284,7 @@
     if (trailLines === null) {
       trailLines = BABYLON.MeshBuilder.CreateLines('PlayerTrail', { points: trailPoints, updatable: true }, scene);
       trailLines.color = new BABYLON.Color3(0.6, 0.7, 1.0);
+      if (world) trailLines.parent = world.getRoot();
     } else {
       BABYLON.MeshBuilder.CreateLines('PlayerTrail', { points: trailPoints, instance: trailLines }, scene);
     }
@@ -326,12 +348,16 @@
   }
 
   let last = performance.now();
-  engine.runRenderLoop(() => {
-    const now = performance.now();
-    const deltaSec = (now - last) / 1000;
-    last = now;
+  // Hook world update into before-render to align with Babylon render lifecycle
+  scene.onBeforeRenderObservable.add(() => {
+    const deltaSec = engine.getDeltaTime() / 1000;
+    last = performance.now();
     updateMovement(deltaSec);
     updateHUD(deltaSec);
+    if (world) world.update(player.position, deltaSec);
+  });
+
+  engine.runRenderLoop(() => {
     scene.render();
   });
 
@@ -346,4 +372,26 @@
     const locked = document.pointerLockElement === canvas;
     if (centerPrompt) centerPrompt.style.display = locked ? 'none' : 'block';
   });
+
+  // Debug layer toggle per Babylon dev practice
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+      if (scene.debugLayer.isVisible()) scene.debugLayer.hide();
+      else scene.debugLayer.show();
+    }
+  });
+
+  // Optional Babylon SceneOptimizer per config
+  (function setupOptimizer(){
+    const level = window.SOL_Config?.optimize?.sceneOptimizer || 'none';
+    if (!BABYLON.SceneOptimizer || level === 'none') return;
+    const optimizations = [];
+    // Basic suggestions: progressively reduce hardware scaling, shadows, post-processes
+    optimizations.push(new BABYLON.HardwareScalingOptimization(0, 1.0));
+    optimizations.push(new BABYLON.HardwareScalingOptimization(2000, 1.25));
+    optimizations.push(new BABYLON.HardwareScalingOptimization(4000, 1.5));
+    const targetFrameRate = level === 'high' ? 70 : level === 'moderate' ? 60 : 50;
+    const trackerDuration = 2000;
+    BABYLON.SceneOptimizer.OptimizeAsync(scene, targetFrameRate, optimizations, trackerDuration);
+  })();
 })();
