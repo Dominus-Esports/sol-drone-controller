@@ -4,4 +4,16 @@ node_modules/
 dist/
 *.log
 
-.vercel
+# Additional ignores
+.cache/
+.out/
+.temp/
+.tmp/
+.vscode/
+.idea/
+.data/
+playwright-report/
+test-results/
+coverage/
+Thumbs.db
+.env*
