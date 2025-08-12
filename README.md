@@ -13,7 +13,10 @@ Quick Start
 
 ```
 npm install
+# macOS/Linux
 npm start
+# Windows PowerShell
+powershell -NoLogo -NoProfile -Command "npm run start"
 # http://localhost:8080
 # Main Scene: http://localhost:8080/Scenes/SOL_Superman_Drone_Controller.html
 # Health: http://localhost:8080/health
