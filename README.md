@@ -9,6 +9,7 @@ Features
 - Flight modes: HOVER, JET, PRECISION, TELEPORT, ENERGY_BLAST, ULTRA
 - Visuals: speed lines, glow/aura, trails; Babylon GridMaterial preferred
 - HUD + Telemetry: live HUD data, optional WebSocket telemetry
+  - New: `SOL_TelemetryClient` library (batching, backoff, metadata & sensors)
 - Performance: adaptive hardware scaling + optional SceneOptimizer
 - Debug: Babylon Debug Layer toggle (Ctrl+Shift+D)
 
@@ -90,6 +91,7 @@ Development workflow
 - Start dev server: `npm start` (Express serves `public/` and `Assets/`)
 - Edit runtime scripts under `public/Assets/Scripts/`
 - Optional: Enable `world.enableChessboardOverlay` for the chess grid overlay
+ - Scenes are also available under `/Scenes` (dev convenience)
 
 Testing
 
