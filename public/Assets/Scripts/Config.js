@@ -52,7 +52,9 @@ window.SOL_Config = {
     floatingOrigin: true,
     // Distance from origin (meters) before recenting world
     recenterThresholdMeters: 500,
-    enableChessboardOverlay: false
+    enableChessboardOverlay: false,
+    // Optional geo anchor to approximate lon/lat via Web Mercator
+    // geoAnchor: { lon: -122.4194, lat: 37.7749 }
   },
   optimize: {
     // 'none' | 'low' | 'moderate' | 'high'

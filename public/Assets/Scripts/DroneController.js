@@ -132,7 +132,9 @@
       const gx = world.accumulatedOrigin.x + player.position.x;
       const gz = world.accumulatedOrigin.z + player.position.z;
       const t = world.worldToTileIndices(gx, gz);
-      return { gx, gz, tx: t.tx, tz: t.tz };
+      const out = { gx, gz, tx: t.tx, tz: t.tz };
+      if (world.lastGeo) out.geo = world.lastGeo;
+      return out;
     }, 200);
     telemetryClient.addSensor('device', () => ({ geo: lastGeo, ori: lastOri }), 1000);
     telemetryClient.start();

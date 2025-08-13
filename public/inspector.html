@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>SOL Telemetry Inspector</title>
+		<style>
+			body { font-family: Arial, sans-serif; margin: 0; padding: 16px; background: #0b0b14; color: #dfe6ff; }
+			h1 { margin: 0 0 12px; font-size: 18px; }
+			pre { background: #0f1526; color: #b8c7ff; padding: 12px; border-radius: 8px; overflow: auto; }
+			.row { display: flex; gap: 16px; flex-wrap: wrap; }
+			.card { flex: 1; min-width: 260px; }
+			.ok { color: #8ff0a4 }
+			.bad { color: #ff9ea3 }
+		</style>
+	</head>
+	<body>
+		<h1>SOL Telemetry Inspector</h1>
+		<div>WS: <span id="wsState" class="bad">disconnected</span></div>
+		<div class="row">
+			<div class="card">
+				<h3>Last Packet</h3>
+				<pre id="last"></pre>
+			</div>
+			<div class="card">
+				<h3>Pose</h3>
+				<pre id="pose"></pre>
+			</div>
+		</div>
+		<script>
+			const wsUrl = (function(){
+				const loc = window.location;
+				const port = loc.port ? loc.port : '8080';
+				return `ws://${loc.hostname}:${port}/ws`;
+			})();
+			const wsState = document.getElementById('wsState');
+			const elLast = document.getElementById('last');
+			const elPose = document.getElementById('pose');
+			let ws;
+			function connect(){
+				try {
+					ws = new WebSocket(wsUrl);
+					ws.onopen = () => { wsState.textContent = 'connected'; wsState.className = 'ok'; };
+					ws.onclose = () => { wsState.textContent = 'disconnected'; wsState.className = 'bad'; setTimeout(connect, 1500); };
+					ws.onerror = () => { try { ws.close(); } catch(_){} };
+					ws.onmessage = (evt) => {
+						try {
+							const data = JSON.parse(evt.data);
+							elLast.textContent = JSON.stringify(data, null, 2);
+							if (data && data.sensors && data.sensors.pose) elPose.textContent = JSON.stringify(data.sensors.pose, null, 2);
+						} catch(_){ }
+					};
+				} catch(_){ setTimeout(connect, 1500); }
+			}
+			connect();
+		</script>
+	</body>
+</html>

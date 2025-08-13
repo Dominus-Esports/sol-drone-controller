@@ -15,6 +15,7 @@
       this.renderRadiusTiles = Number(cfg.renderRadiusTiles ?? options.renderRadiusTiles ?? 3);
       this.enableFloatingOrigin = Boolean(cfg.floatingOrigin ?? options.floatingOrigin ?? true);
       this.recenterThresholdMeters = Number(cfg.recenterThresholdMeters ?? options.recenterThresholdMeters ?? 500);
+      this.geoAnchor = cfg.geoAnchor || null; // { lon, lat }
 
       // Transform root for all world content (terrain, effects tied to world space)
       this.root = new BABYLON.TransformNode('SOL_WorldRoot', scene);
@@ -162,6 +163,15 @@
       }
       // Cull tiles out of range
       this.cullTiles(tx, tz);
+
+      // Optionally compute approximate lon/lat for HUD/telemetry when geoAnchor is set
+      if (this.geoAnchor && window.SOL_GeoProjector) {
+        const p0 = window.SOL_GeoProjector.lonLatToMeters(this.geoAnchor.lon, this.geoAnchor.lat);
+        const gx = p0.x + globalX;
+        const gy = p0.y + globalZ;
+        const ll = window.SOL_GeoProjector.metersToLonLat(gx, gy);
+        this.lastGeo = { lon: ll.lon, lat: ll.lat };
+      }
     }
   }
 
