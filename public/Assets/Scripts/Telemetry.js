@@ -39,6 +39,20 @@
   };
 
   connect();
+  // If the new client exists, mirror SOL_RegisterTelemetrySource into it
+  if (window.SOL_TelemetryClient) {
+    const auto = new window.SOL_TelemetryClient({
+      wsUrl: window.SOL_Config.telemetry.wsUrl,
+      sendIntervalMs: window.SOL_Config.telemetry.sendIntervalMs || 200
+    });
+    // Register a composite sensor that pulls from the same source
+    window.SOL_RegisterTelemetrySource = (fn) => {
+      window.SOL_TelemetrySource = fn;
+      // Also wire the new client
+      auto.addSensor('controller', fn, window.SOL_Config.telemetry.sendIntervalMs || 200);
+      auto.start();
+    };
+  }
 })();
 
 

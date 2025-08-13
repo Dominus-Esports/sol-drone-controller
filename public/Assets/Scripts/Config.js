@@ -34,7 +34,11 @@ window.SOL_Config = {
   },
   telemetry: {
     wsEnabled: !(isVercel || isProdStatic),
-    wsUrl: (typeof location !== 'undefined') ? `ws://${location.hostname}:8080/ws` : 'ws://localhost:8080/ws',
+    wsUrl: (typeof location !== 'undefined')
+      ? (location.port
+          ? `ws://${location.hostname}:${location.port}/ws`
+          : `ws://${location.hostname}:8080/ws`)
+      : 'ws://localhost:8080/ws',
     sendIntervalMs: 200
   },
   world: {

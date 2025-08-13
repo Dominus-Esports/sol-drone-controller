@@ -17,6 +17,8 @@ app.get('/health', (_req, res) => {
 app.use('/', express.static(publicDir));
 app.use('/Assets', express.static(path.join(publicDir, 'Assets')));
 app.use('/Assets', express.static(path.join(rootDir, 'Assets')));
+// Allow direct access to Scenes under /Scenes for e2e and local dev
+app.use('/Scenes', express.static(path.join(rootDir, 'Assets', 'Scenes')));
 app.use('/', express.static(rootDir));
 
 // Local metrics endpoint to write to ./.data/metrics.ndjson
