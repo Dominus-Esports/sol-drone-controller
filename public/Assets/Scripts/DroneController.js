@@ -99,6 +99,47 @@
   const glow = new BABYLON.GlowLayer('glow', scene, { blurKernelSize: 64 });
   glow.intensity = 0.0;
 
+  // Rich telemetry wiring (grounding to real sensors when available)
+  let telemetryClient = null;
+  (function setupTelemetry(){
+    if (!window.SOL_TelemetryClient || !window.SOL_Config?.telemetry?.wsEnabled) return;
+    const url = window.SOL_Config.telemetry.wsUrl;
+    telemetryClient = new window.SOL_TelemetryClient({ wsUrl: url, sendIntervalMs: window.SOL_Config.telemetry.sendIntervalMs || 200 });
+
+    // External sensors (geolocation, device orientation)
+    let lastGeo = null;
+    if (navigator.geolocation?.watchPosition) {
+      try { navigator.geolocation.watchPosition((pos) => { lastGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, alt: pos.coords.altitude }; }, () => {}, { enableHighAccuracy: true, maximumAge: 2000, timeout: 3000 }); } catch(_){}
+    }
+    let lastOri = null;
+    const oriHandler = (e) => { lastOri = { alpha: e.alpha, beta: e.beta, gamma: e.gamma, abs: !!e.absolute }; };
+    window.addEventListener('deviceorientation', oriHandler);
+
+    telemetryClient.setMetadata({ app: 'SOL', ver: '0.1.0' });
+    telemetryClient.addSensor('pose', () => ({
+      x: state.position.x, y: state.position.y, z: state.position.z,
+      vx: state.velocity.x, vy: state.velocity.y, vz: state.velocity.z,
+      yaw: camera.rotation.y, alt: state.position.y
+    }));
+    telemetryClient.addSensor('mode', () => ({ mode: currentMode, ultra: ultraMode, superman: supermanMode, thrust: state.thrustPct, energy: state.energy }));
+    telemetryClient.addSensor('perf', () => ({ fps: Math.round(engine.getFps()) }), 500);
+    telemetryClient.addSensor('camera', () => ({
+      px: camera.position.x, py: camera.position.y, pz: camera.position.z,
+      ry: camera.rotation.y
+    }), 200);
+    telemetryClient.addSensor('world', () => {
+      if (!world) return null;
+      const gx = world.accumulatedOrigin.x + player.position.x;
+      const gz = world.accumulatedOrigin.z + player.position.z;
+      const t = world.worldToTileIndices(gx, gz);
+      return { gx, gz, tx: t.tx, tz: t.tz };
+    }, 200);
+    telemetryClient.addSensor('device', () => ({ geo: lastGeo, ori: lastOri }), 1000);
+    telemetryClient.start();
+
+    window.addEventListener('beforeunload', () => { try { telemetryClient.stop(); } catch(_){} });
+  })();
+
   // Player trail (lines)
   const trailMaxPoints = 60;
   const trailPoints = [];
