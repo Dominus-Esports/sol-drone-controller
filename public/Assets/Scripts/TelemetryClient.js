@@ -101,11 +101,29 @@
 		}
 
 		flush(){
-			if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+			// If offline, persist to IndexedDB store
+			if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN){
+				if (window.SOL_TelemetryStore && this.buffer.length){
+					try { for (const p of this.buffer) window.SOL_TelemetryStore.add(p); this.buffer.length = 0; } catch(_){ }
+				}
+				return;
+			}
 			const take = Math.min(this.buffer.length, this.maxBatch);
-			for (let i = 0; i < take; i += 1) {
-				const item = this.buffer.shift();
-				try { this.ws.send(JSON.stringify(item)); } catch(_){ /* ignore */ }
+			const toSend = this.buffer.splice(0, take);
+			// Drain any persisted items first
+			if (window.SOL_TelemetryStore){
+				try {
+					window.SOL_TelemetryStore.getBatch(this.maxBatch).then((batch) => {
+						const ids = [];
+						for (const it of batch){
+							try { this.ws.send(JSON.stringify(it.payload)); ids.push(it.id); } catch(_){}
+						}
+						if (ids.length) window.SOL_TelemetryStore.removeMany(ids);
+					});
+				} catch(_){ }
+			}
+			for (const item of toSend){
+				try { this.ws.send(JSON.stringify(item)); } catch(_){ }
 			}
 		}
 
